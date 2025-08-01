@@ -91,15 +91,15 @@ def build_graph():
             audit_trail.highlight_anomaly("Amount Verification", reason)
             fraud_found = True
 
-        is_tampered, msg = llm_detect_tampering(state["image"], json_llm)
-        if is_tampered:
-            audit_trail.highlight_anomaly("Tampering Detection", msg)
-            fraud_found = True
+        # is_tampered, msg = llm_detect_tampering(state["image"], json_llm)
+        # if is_tampered:
+            # audit_trail.highlight_anomaly("Tampering Detection", msg)
+            # fraud_found = True
             
-        is_anomalous, msg = llm_analyze_historical_behavior(state["cheque_data"], PAYER_DATABASE, json_llm)
-        if is_anomalous:
-            audit_trail.highlight_anomaly("Behavior Analysis", msg)
-            fraud_found = True
+        # is_anomalous, msg = llm_analyze_historical_behavior(state["cheque_data"], PAYER_DATABASE, json_llm)
+        # if is_anomalous:
+            # audit_trail.highlight_anomaly("Behavior Analysis", msg)
+            # fraud_found = True
 
         # === UPDATE: The signature comparison logic now calls the Gemini agent ===
         cheque_signature = state.get("signature_image")

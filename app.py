@@ -7,7 +7,7 @@ from pathlib import Path
 
 from cheque_processing_langgraph.__main__ import build_graph
 
-# --- Startup: Define root and build graph ---
+# --- Startup: Define root, load assets, build graph ---
 try:
     project_root = str(Path(__file__).parent.resolve())
 except NameError:
@@ -27,18 +27,12 @@ def get_signature_check_result(final_state: dict) -> str:
     if not audit_trail or not hasattr(audit_trail, 'logs'):
         return "Not Performed"
 
-    # Search the audit logs for the signature verification step
-    for log in reversed(audit_trail.logs): # Search backwards for the most recent entry
+    for log in reversed(audit_trail.logs):
         if "Signature Verification" in log:
             if "Success" in log:
-                # Extract the reason, which contains the score
                 reason_part = log.split("Reason: ")[-1]
                 return f"✅ Match ({reason_part})"
-            if "ANOMALY" in log: # Check for anomalies as well
-                reason_part = log.split("Reason: ")[-1]
-                return f"❌ Mismatch ({reason_part})"
     
-    # Check anomalies specifically if not found in logs
     if hasattr(audit_trail, 'anomalies'):
         for anomaly in reversed(audit_trail.anomalies):
             if "Signature Verification" in anomaly:
@@ -81,7 +75,6 @@ def process_cheque_with_ui(cheque_image_np: np.ndarray):
         report += f"| Date                  | {cheque_data.get('formatted_date', 'N/A')} |\n"
         report += f"| Payer Account No.     | {cheque_data.get('payer_account_number', 'N/A')} |\n"
         
-        # Date Validation Row
         is_date_valid = cheque_data.get('is_date_valid', False)
         if is_date_valid:
             date_valid_text = "✅ Yes"
@@ -90,7 +83,6 @@ def process_cheque_with_ui(cheque_image_np: np.ndarray):
             date_valid_text = f"❌ No ({date_reason})"
         report += f"| Is Date Valid?        | {date_valid_text} |\n"
         
-        # Amount Consistency Row
         is_consistent = cheque_data.get('is_amount_consistent', False)
         if is_consistent:
             consistency_text = "✅ Yes"
@@ -99,7 +91,6 @@ def process_cheque_with_ui(cheque_image_np: np.ndarray):
             consistency_text = f"❌ No ({consistency_reason})"
         report += f"| Amounts Consistent?   | {consistency_text} |\n"
         
-        # === NEW: Signature Comparison Result Row ===
         signature_result_text = get_signature_check_result(final_state)
         report += f"| Signature Match?      | {signature_result_text} |\n"
         
@@ -116,6 +107,11 @@ def process_cheque_with_ui(cheque_image_np: np.ndarray):
 
     return cheque_image_np, report
 
+# === NEW: A function to clear the output fields ===
+def clear_outputs():
+    """Returns empty values to clear the output components."""
+    return None, "" # Clear the image preview and the markdown report
+
 # --- Gradio Interface Definition ---
 with gr.Blocks(theme=gr.themes.Soft()) as demo:
     gr.Markdown("# Multi-Agent Cheque Processing System")
@@ -129,9 +125,17 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
             image_output = gr.Image(type="numpy", label="Cheque Preview")
             report_output = gr.Markdown(label="Processing Report")
             
+    # The main processing event, triggered by the button click
     submit_button.click(
         fn=process_cheque_with_ui,
         inputs=[image_input],
+        outputs=[image_output, report_output]
+    )
+    
+    # === NEW: The event handler to clear outputs when a new file is uploaded ===
+    image_input.upload(
+        fn=clear_outputs,
+        inputs=[],
         outputs=[image_output, report_output]
     )
     
