@@ -1,0 +1,31 @@
+cheque_processing_langgraph/
+│
+├── .env                  # Contains your GOOGLE_API_KEY.
+├── app.py                # << MAIN ENTRY POINT >> Run this file for the Gradio UI.
+├── requirements.txt      # Lists all Python package dependencies.
+├── README.md             # Project documentation.
+├── setup.py              # Defines the package for installation.
+│
+└───cheque_processing_langgraph/  # This is the main Python package source directory.
+    │
+    ├── __init__.py           # Makes this directory a Python package.
+    ├── __main__.py           # Defines the LangGraph workflow (`build_graph`) and Payer Database.
+    │
+    ├── audit/
+    │   ├── __init__.py
+    │   └── trail.py          # Contains the AuditTrail class for logging and AI summaries.
+    │
+    ├── fraud_detection/
+    │   ├── __init__.py
+    │   ├── behavior_analysis.py # Agent for checking unusual transaction patterns.
+    │   ├── signature_comparison.py # Agent for the Gemini forensic signature comparison.
+    │   └── tampering_detection.py # Agent for checking visual tampering on the cheque.
+    │
+    ├── image_enhancement/
+    │   ├── __init__.py
+    │   └── enhancer.py       # Agent for checking image readability with Gemini.
+    │
+    └───processing/
+        ├── __init__.py
+        ├── ocr_extraction.py   # The core multi-prompt agent for extracting and validating all data.
+        └── validation.py       # Mock API for validating account numbers.
